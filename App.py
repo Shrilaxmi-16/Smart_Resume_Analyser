@@ -1,3 +1,9 @@
+import subprocess
+import sys
+
+# Run the custom NLTK initialization script
+subprocess.check_call([sys.executable, 'nltk_init.py'])
+
 import streamlit as st
 import pandas as pd
 import base64, random
@@ -16,14 +22,6 @@ import pafy
 import plotly.express as px
 import os
 import nltk
-
-# Ensure NLTK stopwords data is downloaded
-@st.cache_resource
-def download_nltk_data():
-    nltk.download('stopwords')
-    return True
-
-download_nltk_data()
 
 def fetch_yt_video(link):
     video = pafy.new(link)
@@ -125,40 +123,40 @@ def run():
                 resume_text = pdf_reader(save_image_path)
 
                 st.header("**Resume Analysis**")
-                st.success("Hello " + resume_data['name'])
+                st.success("Hello " + resume_data.get('name', 'User'))
                 st.subheader("**Your Basic info**")
                 try:
-                    st.text('Name: ' + resume_data['name'])
-                    st.text('Email: ' + resume_data['email'])
-                    st.text('Contact: ' + resume_data['mobile_number'])
-                    st.text('Resume pages: ' + str(resume_data['no_of_pages']))
+                    st.text('Name: ' + resume_data.get('name', 'N/A'))
+                    st.text('Email: ' + resume_data.get('email', 'N/A'))
+                    st.text('Contact: ' + resume_data.get('mobile_number', 'N/A'))
+                    st.text('Resume pages: ' + str(resume_data.get('no_of_pages', 'N/A')))
                 except:
                     pass
 
                 cand_level = ''
-                if resume_data['no_of_pages'] == 1:
+                if resume_data.get('no_of_pages', 0) == 1:
                     cand_level = "Fresher"
                     st.markdown('''<h4 style='text-align: left; color: #d73b5c;'>You are looking Fresher.</h4>''', unsafe_allow_html=True)
-                elif resume_data['no_of_pages'] == 2:
+                elif resume_data.get('no_of_pages', 0) == 2:
                     cand_level = "Intermediate"
                     st.markdown('''<h4 style='text-align: left; color: #1ed760;'>You are at intermediate level!</h4>''', unsafe_allow_html=True)
-                elif resume_data['no_of_pages'] >= 3:
+                elif resume_data.get('no_of_pages', 0) >= 3:
                     cand_level = "Experienced"
                     st.markdown('''<h4 style='text-align: left; color: #fba171;'>You are at experience level!</h4>''', unsafe_allow_html=True)
 
                 st.subheader("**Skills Recommendation💡**")
-                keywords = st_tags(label='### Skills that you have', text='See our skills recommendation', value=resume_data['skills'], key='1')
+                keywords = st_tags(label='### Skills that you have', text='See our skills recommendation', value=resume_data.get('skills', []), key='1')
 
-                ds_keyword = ['tensorflow', 'keras', 'pytorch', 'machine learning', 'deep Learning', 'flask', 'streamlit']
-                web_keyword = ['react', 'django', 'node jS', 'react js', 'php', 'laravel', 'magento', 'wordpress', 'javascript', 'angular js', 'c#', 'flask']
+                ds_keyword = ['tensorflow', 'keras', 'pytorch', 'machine learning', 'deep learning', 'flask', 'streamlit']
+                web_keyword = ['react', 'django', 'node js', 'react js', 'php', 'laravel', 'magento', 'wordpress', 'javascript', 'angular js', 'c#', 'flask']
                 android_keyword = ['android', 'android development', 'flutter', 'kotlin', 'xml', 'kivy']
-                ios_keyword = ['ios', 'ios development', 'swift', 'cocoa', 'cocoa touch', 'xcode']
+                ios_keyword = ['ios', 'ios development', 'swift', 'cocoa', 'cocoa touch', 'xcode', 'objective c']
                 uiux_keyword = ['ux', 'adobe xd', 'figma', 'zeplin', 'balsamiq', 'ui', 'prototyping', 'wireframes', 'storyframes', 'adobe photoshop', 'photoshop', 'editing', 'adobe illustrator', 'illustrator', 'adobe after effects', 'after effects', 'adobe premier pro', 'premier pro', 'adobe indesign', 'indesign', 'wireframe', 'solid', 'grasp', 'user research', 'user experience']
 
                 recommended_skills = []
                 reco_field = ''
-                rec_course = ''
-                for i in resume_data['skills']:
+                rec_course = []
+                for i in resume_data.get('skills', []):
                     if i.lower() in ds_keyword:
                         reco_field = 'Data Science'
                         st.success("** Our analysis says you are looking for Data Science Jobs.**")
@@ -176,43 +174,48 @@ def run():
                     elif i.lower() in android_keyword:
                         reco_field = 'Android Development'
                         st.success("** Our analysis says you are looking for Android Development Jobs **")
-                        recommended_skills = ['Flutter', 'Kotlin', 'XML', 'Java', 'Kivy']
+                        recommended_skills = ['Java', 'Kotlin', 'Android SDK', 'Flutter']
                         recommended_keywords = st_tags(label='### Recommended skills for you.', text='Recommended skills generated from System', value=recommended_skills, key='4')
                         rec_course = course_recommender(android_course)
                         break
                     elif i.lower() in ios_keyword:
                         reco_field = 'iOS Development'
                         st.success("** Our analysis says you are looking for iOS Development Jobs **")
-                        recommended_skills = ['Swift', 'Cocoa', 'Xcode', 'Objective C']
+                        recommended_skills = ['Swift', 'Objective-C', 'Xcode']
                         recommended_keywords = st_tags(label='### Recommended skills for you.', text='Recommended skills generated from System', value=recommended_skills, key='5')
                         rec_course = course_recommender(ios_course)
                         break
                     elif i.lower() in uiux_keyword:
-                        reco_field = 'UI/UX Designer'
-                        st.success("** Our analysis says you are looking for UI/UX Designer Jobs **")
-                        recommended_skills = ['Adobe XD', 'Figma', 'Wireframes', 'Prototyping', 'User Research', 'UI/UX']
+                        reco_field = 'UI/UX Design'
+                        st.success("** Our analysis says you are looking for UI/UX Design Jobs **")
+                        recommended_skills = ['Wireframing', 'Prototyping', 'User Research', 'Usability Testing']
                         recommended_keywords = st_tags(label='### Recommended skills for you.', text='Recommended skills generated from System', value=recommended_skills, key='6')
                         rec_course = course_recommender(uiux_course)
                         break
 
-                if reco_field == '':
-                    st.info("** Our analysis could not determine the specific job field.**")
-                st.subheader("**Recommended Courses📚**")
-                st.markdown("### Courses are:")
-                for course in rec_course:
-                    st.markdown(f"- {course}")
+                st.subheader("** Recommended Courses 📚**")
+                st.markdown(get_table_download_link(pd.DataFrame(rec_course, columns=['Courses']), 'courses.csv', 'Download Courses'), unsafe_allow_html=True)
+                st.subheader("** Other Resume Data📁**")
+                st.write("Recommendations of Videos related to Resume Writing")
+                st.video(resume_videos)
+                st.write("Recommendations of Videos related to Interviews")
+                st.video(interview_videos)
 
-                st.subheader("**Download Your Report📄**")
-                st.markdown(get_table_download_link(pd.DataFrame([resume_data]), "resume_report.csv", "Download CSV"), unsafe_allow_html=True)
-
-                timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                insert_data_csv(resume_data.get('name', ''), resume_data.get('email', ''), resume_data.get('score', ''), timestamp, resume_data.get('no_of_pages', ''), reco_field, cand_level, ', '.join(resume_data.get('skills', [])), ', '.join(recommended_skills), ', '.join(rec_course))
-            else:
-                st.error("Error parsing resume. Please ensure the file is a valid PDF.")
-
-    elif choice == 'Admin':
-        st.header("**Admin Panel**")
-        # Add admin functionalities here
+                # Save data to CSV
+                insert_data_csv(
+                    resume_data.get('name', 'N/A'),
+                    resume_data.get('email', 'N/A'),
+                    resume_data.get('score', 'N/A'),
+                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    resume_data.get('no_of_pages', 'N/A'),
+                    reco_field,
+                    cand_level,
+                    resume_data.get('skills', []),
+                    recommended_skills,
+                    rec_course
+                )
+    else:
+        st.write("Admin functionalities are under development.")
 
 if __name__ == "__main__":
     run()
