@@ -12,7 +12,6 @@ nltk
 pdfminer3
 spacy
 thinc
-en_core_web_sm
 matplotlib==3.5.3
 numpy==1.23.1
 pandas==1.4.3
