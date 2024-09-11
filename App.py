@@ -16,7 +16,7 @@ from PIL import Image
 import os
 
 # Set NLTK data directory
-nltk.data.path.append('D:/shrilaxmi/nltk_data')
+nltk.data.path.append('./nltk_data')
 
 # Ensure NLTK stopwords and SpaCy model are available
 @st.cache_resource
@@ -163,4 +163,65 @@ def run():
                     if i.lower() in ds_keyword:
                         reco_field = 'Data Science'
                         st.success("** Our analysis says you are looking for Data Science Jobs.**")
-                        recommended_skills = ['Data Visualization', 'Predictive Analysis', 'Statistical Modeling', 'Data Mining', '
+                        recommended_skills = ['Data Visualization', 'Predictive Analysis', 'Statistical Modeling', 'Data Mining', 'Machine Learning']
+                        recommended_keywords = st_tags(label='### Recommended skills for you.', text='Recommended skills generated from System', value=recommended_skills, key='2')
+                        rec_course = course_recommender(ds_course)
+                        break
+                    elif i.lower() in web_keyword:
+                        reco_field = 'Web Development'
+                        st.success("** Our analysis says you are looking for Web Development Jobs. **")
+                        recommended_skills = ['HTML', 'CSS', 'JavaScript', 'React', 'Node.js', 'Django']
+                        recommended_keywords = st_tags(label='### Recommended skills for you.', text='Recommended skills generated from System', value=recommended_skills, key='3')
+                        rec_course = course_recommender(web_course)
+                        break
+                    elif i.lower() in android_keyword:
+                        reco_field = 'Android Development'
+                        st.success("** Our analysis says you are looking for Android Development Jobs **")
+                        recommended_skills = ['Java', 'Kotlin', 'XML', 'Android Studio', 'Firebase']
+                        recommended_keywords = st_tags(label='### Recommended skills for you.', text='Recommended skills generated from System', value=recommended_skills, key='4')
+                        rec_course = course_recommender(android_course)
+                        break
+                    elif i.lower() in ios_keyword:
+                        reco_field = 'iOS Development'
+                        st.success("** Our analysis says you are looking for iOS Development Jobs **")
+                        recommended_skills = ['Swift', 'Xcode', 'Cocoa', 'iOS SDK']
+                        recommended_keywords = st_tags(label='### Recommended skills for you.', text='Recommended skills generated from System', value=recommended_skills, key='5')
+                        rec_course = course_recommender(ios_course)
+                        break
+                    elif i.lower() in uiux_keyword:
+                        reco_field = 'UI/UX Design'
+                        st.success("** Our analysis says you are looking for UI/UX Design Jobs **")
+                        recommended_skills = ['Prototyping', 'Wireframes', 'User Research', 'UI Design', 'UX Design']
+                        recommended_keywords = st_tags(label='### Recommended skills for you.', text='Recommended skills generated from System', value=recommended_skills, key='6')
+                        rec_course = course_recommender(uiux_course)
+                        break
+
+                st.subheader("**Recommended Courses & Certifications📚**")
+                try:
+                    st.markdown(rec_course)
+                except:
+                    pass
+
+                st.subheader("**Resume Score📊**")
+                try:
+                    st.text('Your Resume Score: ' + str(resume_data['score']))
+                except:
+                    pass
+
+                st.subheader("**Others**")
+                if 'email' in resume_data and 'name' in resume_data:
+                    email = resume_data['email']
+                    name = resume_data['name']
+                    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    skills = ', '.join(resume_data['skills'])
+                    recommended_skills = ', '.join(recommended_skills)
+                    insert_data_csv(name, email, resume_data['score'], timestamp, resume_data['no_of_pages'], reco_field, cand_level, skills, recommended_skills, rec_course)
+                else:
+                    st.warning("Could not save data to CSV. Email or name missing.")
+
+    elif choice == 'Admin':
+        st.subheader("Admin Dashboard")
+        # Admin functionalities go here
+
+if __name__ == "__main__":
+    run()
