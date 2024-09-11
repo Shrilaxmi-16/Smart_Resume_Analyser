@@ -1,9 +1,7 @@
 import streamlit as st
 import pandas as pd
-import base64
-import random
-import time
-import datetime
+import base64, random
+import time, datetime
 from pyresparser import ResumeParser
 from pdfminer3.layout import LAParams, LTTextBox
 from pdfminer3.pdfpage import PDFPage
@@ -13,20 +11,19 @@ from pdfminer3.converter import TextConverter
 import io
 from streamlit_tags import st_tags
 from PIL import Image
+from Courses import ds_course, web_course, android_course, ios_course, uiux_course, resume_videos, interview_videos
 import pafy
 import plotly.express as px
 import os
+import nltk
 
-# Define predefined lists for advanced skills extraction
-SKILLS_DB = [
-    'Python', 'Java', 'SQL', 'Machine Learning', 'Data Science', 'Deep Learning', 
-    'NLP', 'TensorFlow', 'Keras', 'Flask', 'Django', 'Pandas', 'NumPy', 'Matplotlib', 
-    'Data Analysis', 'AI', 'AWS', 'GCP', 'Azure', 'Hadoop'
-]
+# Ensure NLTK stopwords data is downloaded
+@st.cache_resource
+def download_nltk_data():
+    nltk.download('stopwords')
+    return True
 
-EDUCATION_DB = [
-    'B.Sc', 'M.Sc', 'B.Tech', 'M.Tech', 'PhD', 'MBA', 'Bachelor', 'Master', 'Diploma', 'Degree'
-]
+download_nltk_data()
 
 def fetch_yt_video(link):
     video = pafy.new(link)
@@ -38,7 +35,7 @@ def get_table_download_link(df, filename, text):
     out: href string
     """
     csv = df.to_csv(index=False)
-    b64 = base64.b64encode(csv.encode()).decode()
+    b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
     href = f'<a href="data:file/csv;base64,{b64}" download="{filename}">{text}</a>'
     return href
 
@@ -51,6 +48,7 @@ def pdf_reader(file):
         for page in PDFPage.get_pages(fh, caching=True, check_extractable=True):
             page_interpreter.process_page(page)
         text = fake_file_handle.getvalue()
+
     converter.close()
     fake_file_handle.close()
     return text
@@ -137,7 +135,6 @@ def run():
                 except:
                     pass
 
-                # Candidate Level
                 cand_level = ''
                 if resume_data['no_of_pages'] == 1:
                     cand_level = "Fresher"
@@ -149,13 +146,11 @@ def run():
                     cand_level = "Experienced"
                     st.markdown('''<h4 style='text-align: left; color: #fba171;'>You are at experience level!</h4>''', unsafe_allow_html=True)
 
-                # Skills Recommendation
                 st.subheader("**Skills Recommendation💡**")
                 keywords = st_tags(label='### Skills that you have', text='See our skills recommendation', value=resume_data['skills'], key='1')
 
-                # Skill categories
-                ds_keyword = ['tensorflow', 'keras', 'pytorch', 'machine learning', 'deep learning', 'flask', 'streamlit']
-                web_keyword = ['react', 'django', 'node js', 'react js', 'php', 'laravel', 'magento', 'wordpress', 'javascript', 'angular js', 'c#', 'flask']
+                ds_keyword = ['tensorflow', 'keras', 'pytorch', 'machine learning', 'deep Learning', 'flask', 'streamlit']
+                web_keyword = ['react', 'django', 'node jS', 'react js', 'php', 'laravel', 'magento', 'wordpress', 'javascript', 'angular js', 'c#', 'flask']
                 android_keyword = ['android', 'android development', 'flutter', 'kotlin', 'xml', 'kivy']
                 ios_keyword = ['ios', 'ios development', 'swift', 'cocoa', 'cocoa touch', 'xcode']
                 uiux_keyword = ['ux', 'adobe xd', 'figma', 'zeplin', 'balsamiq', 'ui', 'prototyping', 'wireframes', 'storyframes', 'adobe photoshop', 'photoshop', 'editing', 'adobe illustrator', 'illustrator', 'adobe after effects', 'after effects', 'adobe premier pro', 'premier pro', 'adobe indesign', 'indesign', 'wireframe', 'solid', 'grasp', 'user research', 'user experience']
@@ -188,51 +183,36 @@ def run():
                     elif i.lower() in ios_keyword:
                         reco_field = 'iOS Development'
                         st.success("** Our analysis says you are looking for iOS Development Jobs **")
-                        recommended_skills = ['Swift', 'Cocoa', 'Cocoa Touch', 'Xcode']
+                        recommended_skills = ['Swift', 'Cocoa', 'Xcode', 'Objective C']
                         recommended_keywords = st_tags(label='### Recommended skills for you.', text='Recommended skills generated from System', value=recommended_skills, key='5')
                         rec_course = course_recommender(ios_course)
                         break
                     elif i.lower() in uiux_keyword:
-                        reco_field = 'UI-UX Development'
-                        st.success("** Our analysis says you are looking for UI-UX Development Jobs **")
-                        recommended_skills = ['Adobe XD', 'Figma', 'Prototyping', 'Wireframes', 'Storyframes']
+                        reco_field = 'UI/UX Designer'
+                        st.success("** Our analysis says you are looking for UI/UX Designer Jobs **")
+                        recommended_skills = ['Adobe XD', 'Figma', 'Wireframes', 'Prototyping', 'User Research', 'UI/UX']
                         recommended_keywords = st_tags(label='### Recommended skills for you.', text='Recommended skills generated from System', value=recommended_skills, key='6')
                         rec_course = course_recommender(uiux_course)
                         break
 
-                timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                if reco_field == '':
+                    st.info("** Our analysis could not determine the specific job field.**")
+                st.subheader("**Recommended Courses📚**")
+                st.markdown("### Courses are:")
+                for course in rec_course:
+                    st.markdown(f"- {course}")
 
-                st.subheader("**Resume Tips💡**")
-                resume_video = random.choice(resume_videos)
-                st.video(resume_video)
-                st.caption(fetch_yt_video(resume_video))
+                st.subheader("**Download Your Report📄**")
+                st.markdown(get_table_download_link(pd.DataFrame([resume_data]), "resume_report.csv", "Download CSV"), unsafe_allow_html=True)
 
-                st.subheader("**Interview Preparation Tips💡**")
-                interview_video = random.choice(interview_videos)
-                st.video(interview_video)
-                st.caption(fetch_yt_video(interview_video))
-
-                insert_data_csv(
-                    resume_data['name'], resume_data['email'], random.randint(50, 100), timestamp,
-                    resume_data['no_of_pages'], reco_field, cand_level, ', '.join(resume_data['skills']),
-                    ', '.join(recommended_skills), ', '.join(rec_course)
-                )
-
-    else:
-        st.success('Welcome to Admin')
-        ad_user = st.text_input("Username")
-        ad_password = st.text_input("Password", type='password')
-        if st.button('Login'):
-            if ad_user == 'admin' and ad_password == 'admin':
-                st.success("Welcome Admin")
-                if os.path.exists(CSV_FILE):
-                    df = pd.read_csv(CSV_FILE)
-                    st.header("**User's👨‍💻 Data**")
-                    st.dataframe(df)
-                    st.markdown(get_table_download_link(df, 'User_Data.csv', 'Download Report'), unsafe_allow_html=True)
-                else:
-                    st.error("No data available yet.")
+                timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                insert_data_csv(resume_data.get('name', ''), resume_data.get('email', ''), resume_data.get('score', ''), timestamp, resume_data.get('no_of_pages', ''), reco_field, cand_level, ', '.join(resume_data.get('skills', [])), ', '.join(recommended_skills), ', '.join(rec_course))
             else:
-                st.error("Wrong ID & Password Provided")
+                st.error("Error parsing resume. Please ensure the file is a valid PDF.")
 
-run()
+    elif choice == 'Admin':
+        st.header("**Admin Panel**")
+        # Add admin functionalities here
+
+if __name__ == "__main__":
+    run()
