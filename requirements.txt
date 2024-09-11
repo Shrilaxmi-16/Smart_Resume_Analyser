@@ -12,3 +12,4 @@ nltk
 pdfminer3
 spacy
 thinc
+en_core_web_sm
