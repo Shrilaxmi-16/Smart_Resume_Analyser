@@ -3,6 +3,7 @@ import pandas as pd
 import base64, random
 import time, datetime
 import spacy
+import nltk
 from pyresparser import ResumeParser
 from pdfminer3.layout import LAParams
 from pdfminer3.pdfpage import PDFPage
@@ -12,14 +13,12 @@ from pdfminer3.converter import TextConverter
 import io
 from streamlit_tags import st_tags
 from PIL import Image
-from Courses import ds_course, web_course, android_course, ios_course, uiux_course, resume_videos, interview_videos
-import pafy
-import plotly.express as px
 import os
 
-# Ensure spaCy model is downloaded and available
+# Ensure NLTK stopwords and SpaCy model are available
 @st.cache_resource
-def load_spacy_model():
+def load_resources():
+    nltk.download('stopwords')
     try:
         nlp = spacy.load('en_core_web_sm')
     except OSError:
@@ -27,8 +26,8 @@ def load_spacy_model():
         nlp = spacy.load('en_core_web_sm')
     return nlp
 
-# Load the spaCy model
-nlp = load_spacy_model()
+# Load resources
+nlp = load_resources()
 
 def fetch_yt_video(link):
     video = pafy.new(link)
