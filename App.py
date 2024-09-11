@@ -3,6 +3,7 @@ import nltk
 import spacy
 nltk.download('stopwords')
 spacy.load('en_core_web_sm')
+
 import pandas as pd
 import base64, random
 import time, datetime
@@ -36,6 +37,7 @@ def get_table_download_link(df, filename, text):
     # href = f'<a href="data:file/csv;base64,{b64}">Download Report</a>'
     href = f'<a href="data:file/csv;base64,{b64}" download="{filename}">{text}</a>'
     return href
+
 
 def pdf_reader(file):
     resource_manager = PDFResourceManager()
@@ -430,4 +432,4 @@ def run():
                 st.error("Wrong ID & Password Provided")
 
 
-run()                                          
+run()
