@@ -11,3 +11,4 @@ youtube-dl
 nltk
 pdfminer3
 spacy
+thinc
