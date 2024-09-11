@@ -1,3 +1,9 @@
+import subprocess
+import sys
+
+# Download NLTK data if not already available
+subprocess.check_call([sys.executable, 'nltk_download.py'])
+
 import streamlit as st
 import pandas as pd
 import base64, random
