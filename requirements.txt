@@ -1,4 +1,5 @@
 nltk
+spacy
 pyresparser
 streamlit
 pandas
