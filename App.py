@@ -18,7 +18,7 @@ import os
 # Ensure NLTK stopwords and SpaCy model are available
 @st.cache_resource
 def load_resources():
-    nltk.download('stopwords')
+    nltk.download('stopwords', download_dir='./nltk_data')  # Specify a directory to download NLTK data
     try:
         nlp = spacy.load('en_core_web_sm')
     except OSError:
@@ -175,7 +175,7 @@ def run():
                     elif i.lower() in android_keyword:
                         reco_field = 'Android Development'
                         st.success("** Our analysis says you are looking for Android Development Jobs **")
-                        recommended_skills = ['Kotlin', 'Flutter', 'Android SDK', 'Java', 'XML']
+                        recommended_skills = ['Java', 'Kotlin', 'XML', 'Android Studio', 'Firebase']
                         recommended_keywords = st_tags(label='### Recommended skills for you.', text='Recommended skills generated from System', value=recommended_skills, key='4')
                         rec_course = course_recommender(android_course)
                         break
