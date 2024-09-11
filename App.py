@@ -1,25 +1,36 @@
 import streamlit as st
 import pandas as pd
-import base64, random
-import time, datetime
+import base64
+import random
+import time
+import datetime
 from pyresparser import ResumeParser
 from pdfminer3.layout import LAParams, LTTextBox
 from pdfminer3.pdfpage import PDFPage
 from pdfminer3.pdfinterp import PDFResourceManager
 from pdfminer3.pdfinterp import PDFPageInterpreter
 from pdfminer3.converter import TextConverter
-import io, random
+import io
 from streamlit_tags import st_tags
 from PIL import Image
-from Courses import ds_course, web_course, android_course, ios_course, uiux_course, resume_videos, interview_videos
 import pafy
 import plotly.express as px
 import os
 
+# Define predefined lists for advanced skills extraction
+SKILLS_DB = [
+    'Python', 'Java', 'SQL', 'Machine Learning', 'Data Science', 'Deep Learning', 
+    'NLP', 'TensorFlow', 'Keras', 'Flask', 'Django', 'Pandas', 'NumPy', 'Matplotlib', 
+    'Data Analysis', 'AI', 'AWS', 'GCP', 'Azure', 'Hadoop'
+]
+
+EDUCATION_DB = [
+    'B.Sc', 'M.Sc', 'B.Tech', 'M.Tech', 'PhD', 'MBA', 'Bachelor', 'Master', 'Diploma', 'Degree'
+]
+
 def fetch_yt_video(link):
     video = pafy.new(link)
     return video.title
-
 
 def get_table_download_link(df, filename, text):
     """Generates a link allowing the data in a given panda dataframe to be downloaded
@@ -27,10 +38,9 @@ def get_table_download_link(df, filename, text):
     out: href string
     """
     csv = df.to_csv(index=False)
-    b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
+    b64 = base64.b64encode(csv.encode()).decode()
     href = f'<a href="data:file/csv;base64,{b64}" download="{filename}">{text}</a>'
     return href
-
 
 def pdf_reader(file):
     resource_manager = PDFResourceManager()
@@ -41,18 +51,15 @@ def pdf_reader(file):
         for page in PDFPage.get_pages(fh, caching=True, check_extractable=True):
             page_interpreter.process_page(page)
         text = fake_file_handle.getvalue()
-
     converter.close()
     fake_file_handle.close()
     return text
-
 
 def show_pdf(file_path):
     with open(file_path, "rb") as f:
         base64_pdf = base64.b64encode(f.read()).decode('utf-8')
     pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000" type="application/pdf"></iframe>'
     st.markdown(pdf_display, unsafe_allow_html=True)
-
 
 def course_recommender(course_list):
     st.subheader("**Courses & Certificates🎓 Recommendations**")
@@ -67,7 +74,6 @@ def course_recommender(course_list):
         if c == no_of_reco:
             break
     return rec_course
-
 
 # CSV file to store the user data
 CSV_FILE = "user_data.csv"
@@ -94,12 +100,10 @@ def insert_data_csv(name, email, res_score, timestamp, no_of_pages, reco_field, 
     df = df.append(new_data, ignore_index=True)
     df.to_csv(CSV_FILE, index=False)
 
-
 st.set_page_config(
     page_title="Smart Resume Analyzer",
     page_icon='./Logo/SRA_Logo.ico',
 )
-
 
 def run():
     st.title("Smart Resume Analyser")
@@ -133,6 +137,7 @@ def run():
                 except:
                     pass
 
+                # Candidate Level
                 cand_level = ''
                 if resume_data['no_of_pages'] == 1:
                     cand_level = "Fresher"
@@ -144,11 +149,13 @@ def run():
                     cand_level = "Experienced"
                     st.markdown('''<h4 style='text-align: left; color: #fba171;'>You are at experience level!</h4>''', unsafe_allow_html=True)
 
+                # Skills Recommendation
                 st.subheader("**Skills Recommendation💡**")
                 keywords = st_tags(label='### Skills that you have', text='See our skills recommendation', value=resume_data['skills'], key='1')
 
-                ds_keyword = ['tensorflow', 'keras', 'pytorch', 'machine learning', 'deep Learning', 'flask', 'streamlit']
-                web_keyword = ['react', 'django', 'node jS', 'react js', 'php', 'laravel', 'magento', 'wordpress', 'javascript', 'angular js', 'c#', 'flask']
+                # Skill categories
+                ds_keyword = ['tensorflow', 'keras', 'pytorch', 'machine learning', 'deep learning', 'flask', 'streamlit']
+                web_keyword = ['react', 'django', 'node js', 'react js', 'php', 'laravel', 'magento', 'wordpress', 'javascript', 'angular js', 'c#', 'flask']
                 android_keyword = ['android', 'android development', 'flutter', 'kotlin', 'xml', 'kivy']
                 ios_keyword = ['ios', 'ios development', 'swift', 'cocoa', 'cocoa touch', 'xcode']
                 uiux_keyword = ['ux', 'adobe xd', 'figma', 'zeplin', 'balsamiq', 'ui', 'prototyping', 'wireframes', 'storyframes', 'adobe photoshop', 'photoshop', 'editing', 'adobe illustrator', 'illustrator', 'adobe after effects', 'after effects', 'adobe premier pro', 'premier pro', 'adobe indesign', 'indesign', 'wireframe', 'solid', 'grasp', 'user research', 'user experience']
@@ -227,6 +234,5 @@ def run():
                     st.error("No data available yet.")
             else:
                 st.error("Wrong ID & Password Provided")
-
 
 run()
