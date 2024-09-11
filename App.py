@@ -1,7 +1,7 @@
 import subprocess
 import sys
 
-# Run the custom NLTK initialization script
+# Run the custom initialization script
 subprocess.check_call([sys.executable, 'nltk_init.py'])
 
 import streamlit as st
@@ -22,6 +22,7 @@ import pafy
 import plotly.express as px
 import os
 import nltk
+
 
 def fetch_yt_video(link):
     video = pafy.new(link)
