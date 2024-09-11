@@ -11,5 +11,3 @@ youtube-dl
 nltk
 pdfminer3
 spacy
-NumpyOps
-Ops
